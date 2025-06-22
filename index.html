@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprinto Vendor Evaluator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 100vw;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .top-nav {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            margin-left: 3rem;
+        }
+        
+        .nav-tab {
+            padding: 0.5rem 0;
+            text-decoration: none;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .nav-tab:hover {
+            color: #3b82f6;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .notification-badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        .left-panel {
+            flex: 1;
+        }
+        
+        .right-panel {
+            width: 320px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .create-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .create-btn:hover {
+            background: #2563eb;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            min-width: fit-content;
+        }
+        
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-pill {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        
+        .filter-pill:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        
+        .filter-pill.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .filter-pill.deadline-overdue {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        
+        .filter-pill.deadline-overdue.active {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .filter-pill.deadline-soon {
+            background: #fef3c7;
+            color: #d97706;
+            border-color: #fde68a;
+        }
+        
+        .filter-pill.deadline-soon.active {
+            background: #d97706;
+            color: white;
+        }
+        
+        .table-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+        
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .vendor-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-disqualified {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .progress-bar {
+            width: 80px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .score {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .alert-icon {
+            color: #f59e0b;
+            font-size: 1.125rem;
+            cursor: pointer;
+        }
+        
+        .deadline {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .deadline.overdue {
+            color: #dc2626;
+            font-weight: 500;
+        }
+        
+        .view-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .view-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .activity-feed {
+            padding: 1.5rem;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .activity-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-content {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .role-badge {
+            background: #ede9fe;
+            color: #6b21a8;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1.5rem 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        
+        .modal-content {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .modal-actions {
+            padding: 0 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+        
+        .btn-secondary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .scorecard-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .scorecard-modal.active {
+            display: flex;
+        }
+        
+        .scorecard-content {
+            background: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .scorecard-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .scorecard-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .scorecard-meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .scorecard-table-container {
+            padding: 1.5rem;
+        }
+        
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+        
+        .scorecard-table th {
+            background: #f8fafc;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+            border: 1px solid #e2e8f0;
+            font-size: 0.8rem;
+        }
+        
+        .scorecard-table td {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .stakeholder-cell {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+            text-align: left;
+            padding-left: 1rem;
+        }
+        
+        .score-cell {
+            font-weight: 600;
+        }
+        
+        .score-excellent {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .score-good {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .score-fair {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .score-poor {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .score-pending {
+            background: #f1f5f9;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .overall-row {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+        
+        .notes-section {
+            padding: 0 1.5rem 1.5rem;
+        }
+        
+        .notes-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+        }
+        
+        .note-item {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .note-stakeholder {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .right-panel {
+                width: 100%;
+                position: static;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .scorecard-table {
+                font-size: 0.75rem;
+            }
+            
+            .scorecard-table th,
+            .scorecard-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="top-nav">
+            <div style="display: flex; align-items: center;">
+                <div class="logo">Sprinto Vendor Evaluator</div>
+                <div class="nav-tabs">
+                    <a href="#" class="nav-tab active">Dashboard</a>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="notification-badge">3</div>
+                <span>Sarah Chen</span>
+                <span>•</span>
+                <span class="role-badge">Procurement</span>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="header-section">
+                    <h1 class="page-title">Vendor Evaluations</h1>
+                    <button class="create-btn" onclick="openModal()">+ Create New Evaluation</button>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <span class="filter-label">Deadline:</span>
+                        <div class="filter-pills">
+                            <div class="filter-pill active" onclick="showAll()">All (8)</div>
+                            <div class="filter-pill deadline-soon" onclick="showSoon()">Due Soon (3)</div>
+                            <div class="filter-pill deadline-overdue" onclick="showOverdue()">Past Due (2)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vendor Name</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Avg Score</th>
+                                <th>Alert</th>
+                                <th>Deadline</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendor-table-body">
+                            <!-- Table content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="activity-feed">
+                    <h3 class="activity-title">
+                        Recent Activity
+                        <div class="notification-badge">5</div>
+                    </h3>
+                    
+                    <div class="activity-item">
+                        <div class="activity-content">Alice submitted scores for Acme Security Solutions</div>
+                        <div class="activity-meta">
+                            <span>2 hours ago</span>
+                            <span class="role-badge">Legal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-content">Security flagged CloudTech Systems as Not a Fit</div>
+                        <div class="activity-meta">
+                            <span>4 hours ago</span>
+                            <span class="role-badge">Security</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-content">Evaluation completed for DataFlow Analytics</div>
+                        <div class="activity-meta">
+                            <span>1 day ago</span>
+                            <span class="role-badge">Business</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-content">Mike updated compliance scores for SecureBase Inc.</div>
+                        <div class="activity-meta">
+                            <span>1 day ago</span>
+                            <span class="role-badge">Legal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-content">New evaluation created for TechFlow Partners</div>
+                        <div class="activity-meta">
+                            <span>2 days ago</span>
+                            <span class="role-badge">Procurement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Evaluation</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label class="form-label">Vendor Name</label>
+                    <input type="text" class="form-input" id="vendorNameInput" placeholder="Enter vendor name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Evaluation Deadline</label>
+                    <input type="date" class="form-input" id="deadlineInput">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Evaluation Type</label>
+                    <select class="form-input" id="evaluationTypeInput">
+                        <option value="security">Security Assessment</option>
+                        <option value="compliance">Compliance Review</option>
+                        <option value="technical">Technical Evaluation</option>
+                        <option value="business">Business Case Review</option>
+                        <option value="comprehensive">Comprehensive Assessment</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="createEvaluation()">Create Evaluation</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="scorecard-modal" id="scorecardModal">
+        <div class="scorecard-content">
+            <div class="scorecard-header">
+                <div>
+                    <h2 class="scorecard-title" id="scorecardVendorName">Vendor Scorecard</h2>
+                    <div class="scorecard-meta" id="scorecardMeta">Loading scorecard data...</div>
+                </div>
+                <button class="close-btn" onclick="closeScorecard()">&times;</button>
+            </div>
+            
+            <div class="scorecard-table-container">
+                <table class="scorecard-table" id="scorecardTable">
+                    <!-- Scorecard content will be populated by JavaScript -->
+                </table>
+            </div>
+            
+            <div class="notes-section">
+                <h3 class="notes-title">Key Comments & Feedback</h3>
+                <div id="scorecardNotes">
+                    <!-- Notes will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive vendor data with proper categorization
+        const vendors = [
+            {
+                name: "Acme Security Solutions",
+                status: "In Progress",
+                progress: 75,
+                score: "4.2 / 5",
+                alert: true,
+                deadline: "Dec 15, 2024",
+                category: "soon",
+                html: `
+                    <tr>
+                        <td class="vendor-name">Acme Security Solutions</td>
+                        <td><span class="status-badge status-progress">In Progress</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
+                            </div>
+                            <div class="progress-text">75% Complete</div>
+                        </td>
+                        <td class="score">4.2 / 5</td>
+                        <td><span class="alert-icon" onclick="showAlert('High variance detected in stakeholder scores')" title="High variance in scores">⚠️</span></td>
+                        <td class="deadline">Dec 15, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('Acme Security Solutions')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "DataFlow Analytics",
+                status: "Completed",
+                progress: 100,
+                score: "3.8 / 5",
+                alert: false,
+                deadline: "Dec 10, 2024",
+                category: "all",
+                html: `
+                    <tr>
+                        <td class="vendor-name">DataFlow Analytics</td>
+                        <td><span class="status-badge status-completed">Completed</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <div class="progress-text">100% Complete</div>
+                        </td>
+                        <td class="score">3.8 / 5</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 10, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('DataFlow Analytics')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "CloudTech Systems",
+                status: "Disqualified",
+                progress: 60,
+                score: "2.1 / 5",
+                alert: false,
+                deadline: "Dec 8, 2024",
+                category: "overdue",
+                html: `
+                    <tr>
+                        <td class="vendor-name">CloudTech Systems</td>
+                        <td><span class="status-badge status-disqualified">Disqualified</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <div class="progress-text">60% Complete</div>
+                        </td>
+                        <td class="score">2.1 / 5</td>
+                        <td>—</td>
+                        <td class="deadline overdue">Dec 8, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('CloudTech Systems')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "TechFlow Partners",
+                status: "In Progress",
+                progress: 40,
+                score: "—",
+                alert: false,
+                deadline: "Dec 20, 2024",
+                category: "all",
+                html: `
+                    <tr>
+                        <td class="vendor-name">TechFlow Partners</td>
+                        <td><span class="status-badge status-progress">In Progress</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 40%"></div>
+                            </div>
+                            <div class="progress-text">40% Complete</div>
+                        </td>
+                        <td class="score">—</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 20, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('TechFlow Partners')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "SecureBase Inc.",
+                status: "In Progress",
+                progress: 85,
+                score: "4.6 / 5",
+                alert: false,
+                deadline: "Dec 18, 2024",
+                category: "soon",
+                html: `
+                    <tr>
+                        <td class="vendor-name">SecureBase Inc.</td>
+                        <td><span class="status-badge status-progress">In Progress</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                            <div class="progress-text">85% Complete</div>
+                        </td>
+                        <td class="score">4.6 / 5</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 18, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('SecureBase Inc.')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "CyberShield Pro",
+                status: "In Progress",
+                progress: 30,
+                score: "—",
+                alert: false,
+                deadline: "Dec 16, 2024",
+                category: "soon",
+                html: `
+                    <tr>
+                        <td class="vendor-name">CyberShield Pro</td>
+                        <td><span class="status-badge status-progress">In Progress</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 30%"></div>
+                            </div>
+                            <div class="progress-text">30% Complete</div>
+                        </td>
+                        <td class="score">—</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 16, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('CyberShield Pro')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "Global IT Solutions",
+                status: "Disqualified",
+                progress: 45,
+                score: "1.8 / 5",
+                alert: false,
+                deadline: "Dec 5, 2024",
+                category: "overdue",
+                html: `
+                    <tr>
+                        <td class="vendor-name">Global IT Solutions</td>
+                        <td><span class="status-badge status-disqualified">Disqualified</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 45%"></div>
+                            </div>
+                            <div class="progress-text">45% Complete</div>
+                        </td>
+                        <td class="score">1.8 / 5</td>
+                        <td>—</td>
+                        <td class="deadline overdue">Dec 5, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('Global IT Solutions')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "InnovateTech Corp",
+                status: "Completed",
+                progress: 100,
+                score: "4.1 / 5",
+                alert: false,
+                deadline: "Dec 12, 2024",
+                category: "all",
+                html: `
+                    <tr>
+                        <td class="vendor-name">InnovateTech Corp</td>
+                        <td><span class="status-badge status-completed">Completed</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <div class="progress-text">100% Complete</div>
+                        </td>
+                        <td class="score">4.1 / 5</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 12, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('InnovateTech Corp')">View Scorecard</button></td>
+                    </tr>
+                `
+            },
+            {
+                name: "NextGen Security",
+                status: "In Progress",
+                progress: 20,
+                score: "—",
+                alert: false,
+                deadline: "Dec 25, 2024",
+                category: "all",
+                html: `
+                    <tr>
+                        <td class="vendor-name">NextGen Security</td>
+                        <td><span class="status-badge status-progress">In Progress</span></td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 20%"></div>
+                            </div>
+                            <div class="progress-text">20% Complete</div>
+                        </td>
+                        <td class="score">—</td>
+                        <td>—</td>
+                        <td class="deadline">Dec 25, 2024</td>
+                        <td><button class="view-btn" onclick="showScorecard('NextGen Security')">View Scorecard</button></td>
+                    </tr>
+                `
+            }
+        ];
+
+        // Filter functions
+        function showAll() {
+            updateActiveFilter('all');
+            renderVendors(vendors);
+        }
+
+        function showSoon() {
+            updateActiveFilter('soon');
+            const soonVendors = vendors.filter(vendor => vendor.category === 'soon');
+            renderVendors(soonVendors);
+        }
+
+        function showOverdue() {
+            updateActiveFilter('overdue');
+            const overdueVendors = vendors.filter(vendor => vendor.category === 'overdue');
+            renderVendors(overdueVendors);
+        }
+
+        function updateActiveFilter(activeFilter) {
+            // Remove active class from all filter pills
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            
+            // Add active class to the appropriate filter
+            const filterElements = document.querySelectorAll('.filter-pill');
+            if (activeFilter === 'all') {
+                filterElements[0].classList.add('active');
+            } else if (activeFilter === 'soon') {
+                document.querySelector('.deadline-soon').classList.add('active');
+            } else if (activeFilter === 'overdue') {
+                document.querySelector('.deadline-overdue').classList.add('active');
+            }
+        }
+
+        function renderVendors(vendorList) {
+            const tableBody = document.getElementById('vendor-table-body');
+            if (vendorList.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: #64748b;">
+                            No vendors found for the selected filter.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableBody.innerHTML = vendorList.map(vendor => vendor.html).join('');
+            }
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').classList.remove('active');
+            // Clear form fields
+            document.getElementById('vendorNameInput').value = '';
+            document.getElementById('deadlineInput').value = '';
+            document.getElementById('evaluationTypeInput').value = 'security';
+        }
+
+        function createEvaluation() {
+            const vendorName = document.getElementById('vendorNameInput').value.trim();
+            const deadline = document.getElementById('deadlineInput').value;
+            const evaluationType = document.getElementById('evaluationTypeInput').value;
+            
+            if (vendorName && deadline) {
+                // Create new vendor entry
+                const newVendor = {
+                    name: vendorName,
+                    status: "In Progress",
+                    progress: 0,
+                    score: "—",
+                    alert: false,
+                    deadline: new Date(deadline).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                    }),
+                    category: "all",
+                    html: `
+                        <tr>
+                            <td class="vendor-name">${vendorName}</td>
+                            <td><span class="status-badge status-progress">In Progress</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text">0% Complete</div>
+                            </td>
+                            <td class="score">—</td>
+                            <td>—</td>
+                            <td class="deadline">${new Date(deadline).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                            })}</td>
+                            <td><button class="view-btn" onclick="showScorecard('${vendorName}')">View Scorecard</button></td>
+                        </tr>
+                    `
+                };
+                
+                vendors.push(newVendor);
+                alert(`New ${evaluationType} evaluation created for: ${vendorName}`);
+                closeModal();
+                showAll(); // Refresh the table
+            } else {
+                alert('Please enter both vendor name and deadline');
+            }
+        }
+
+        // Alert function
+        function showAlert(message = 'Alert triggered') {
+            alert(message);
+        }
+
+        // Comprehensive scorecard data
+        const scorecardData = {
+            'Acme Security Solutions': {
+                meta: 'Overall Score: 4.2/5 • Status: In Progress • Deadline: Dec 15, 2024',
+                table: `
+                    <thead>
+                        <tr>
+                            <th>Evaluation Criteria</th>
+                            <th>Security Team</th>
+                            <th>Legal Team</th>
+                            <th>Business Team</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stakeholder-cell">Security Compliance</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.5</td>
+                            <td class="score-cell score-excellent">4.5</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Cost Effectiveness</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-good">4.5</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Technical Capability</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-fair">3.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Integration Complexity</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-fair">3.5</td>
+                            <td class="score-cell score-good">3.8</td>
+                        </tr>
+                        <tr class="overall-row">
+                            <td class="stakeholder-cell">Overall Score</td>
+                            <td class="score-cell">4.5</td>
+                            <td class="score-cell">3.7</td>
+                            <td class="score-cell">4.3</td>
+                            <td class="score-cell">4.2</td>
+                        </tr>
+                    </tbody>
+                `,
+                notes: `
+                    <div class="note-item">
+                        <span class="note-stakeholder">Security Team:</span> Excellent security posture with comprehensive SOC2 Type II certification. Strong encryption and access controls.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Legal Team:</span> Some concerns about liability clauses and data retention policies. Needs revision in contract terms.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Business Team:</span> Strong value proposition with competitive pricing. Good ROI potential and scalability.
+                    </div>
+                `
+            },
+            'DataFlow Analytics': {
+                meta: 'Overall Score: 3.8/5 • Status: Completed • Deadline: Dec 10, 2024',
+                table: `
+                    <thead>
+                        <tr>
+                            <th>Evaluation Criteria</th>
+                            <th>Security Team</th>
+                            <th>Legal Team</th>
+                            <th>Business Team</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stakeholder-cell">Security Compliance</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Cost Effectiveness</td>
+                            <td class="score-cell score-fair">3.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-fair">3.5</td>
+                            <td class="score-cell score-fair">3.5</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Technical Capability</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Data Analytics Features</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-fair">3.5</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">3.8</td>
+                        </tr>
+                        <tr class="overall-row">
+                            <td class="stakeholder-cell">Overall Score</td>
+                            <td class="score-cell">3.8</td>
+                            <td class="score-cell">3.9</td>
+                            <td class="score-cell">3.9</td>
+                            <td class="score-cell">3.8</td>
+                        </tr>
+                    </tbody>
+                `,
+                notes: `
+                    <div class="note-item">
+                        <span class="note-stakeholder">Security Team:</span> Adequate security measures with standard compliance certifications. Some improvement needed.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Legal Team:</span> Contract terms are acceptable with minor adjustments needed for liability coverage.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Business Team:</span> Good fit for our analytics needs with competitive feature set.
+                    </div>
+                `
+            },
+            'CloudTech Systems': {
+                meta: 'Overall Score: 2.1/5 • Status: Disqualified • Deadline: Dec 8, 2024',
+                table: `
+                    <thead>
+                        <tr>
+                            <th>Evaluation Criteria</th>
+                            <th>Security Team</th>
+                            <th>Legal Team</th>
+                            <th>Business Team</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stakeholder-cell">Security Compliance</td>
+                            <td class="score-cell score-poor">1.0</td>
+                            <td class="score-cell score-poor">2.0</td>
+                            <td class="score-cell score-fair">3.0</td>
+                            <td class="score-cell score-poor">2.0</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Cost Effectiveness</td>
+                            <td class="score-cell score-fair">3.0</td>
+                            <td class="score-cell score-fair">3.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-fair">3.3</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Technical Capability</td>
+                            <td class="score-cell score-poor">2.0</td>
+                            <td class="score-cell score-poor">1.0</td>
+                            <td class="score-cell score-poor">2.0</td>
+                            <td class="score-cell score-poor">1.7</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Vendor Support</td>
+                            <td class="score-cell score-poor">1.0</td>
+                            <td class="score-cell score-poor">1.0</td>
+                            <td class="score-cell score-poor">1.5</td>
+                            <td class="score-cell score-poor">1.2</td>
+                        </tr>
+                        <tr class="overall-row">
+                            <td class="stakeholder-cell">Overall Score</td>
+                            <td class="score-cell">1.8</td>
+                            <td class="score-cell">1.8</td>
+                            <td class="score-cell">2.6</td>
+                            <td class="score-cell">2.1</td>
+                        </tr>
+                    </tbody>
+                `,
+                notes: `
+                    <div class="note-item">
+                        <span class="note-stakeholder">Security Team:</span> Critical security gaps identified. No SOC2 certification and weak encryption standards.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Legal Team:</span> Unacceptable contract terms with excessive liability exposure for our organization.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Business Team:</span> Poor vendor support and limited technical capabilities. Not recommended.
+                    </div>
+                `
+            },
+            'SecureBase Inc.': {
+                meta: 'Overall Score: 4.6/5 • Status: In Progress • Deadline: Dec 18, 2024',
+                table: `
+                    <thead>
+                        <tr>
+                            <th>Evaluation Criteria</th>
+                            <th>Security Team</th>
+                            <th>Legal Team</th>
+                            <th>Business Team</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stakeholder-cell">Security Compliance</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Cost Effectiveness</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.5</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-good">4.2</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Technical Capability</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-excellent">5.0</td>
+                            <td class="score-cell score-excellent">4.7</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Implementation Timeline</td>
+                            <td class="score-cell score-good">4.0</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-good">4.5</td>
+                            <td class="score-cell score-good">4.3</td>
+                        </tr>
+                        <tr class="overall-row">
+                            <td class="stakeholder-cell">Overall Score</td>
+                            <td class="score-cell">4.5</td>
+                            <td class="score-cell">4.5</td>
+                            <td class="score-cell">4.6</td>
+                            <td class="score-cell">4.6</td>
+                        </tr>
+                    </tbody>
+                `,
+                notes: `
+                    <div class="note-item">
+                        <span class="note-stakeholder">Security Team:</span> Outstanding security framework with multiple certifications including SOC2, ISO27001, and PCI DSS.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Legal Team:</span> Contract review in progress. Initial terms look favorable with standard liability protections.
+                    </div>
+                    <div class="note-item">
+                        <span class="note-stakeholder">Business Team:</span> Excellent technical capabilities and strong track record. Highly recommended vendor.
+                    </div>
+                `
+            }
+        };
+
+        // Scorecard functions
+        function showScorecard(vendorName) {
+            document.getElementById('scorecardVendorName').textContent = vendorName + ' - Scorecard';
+            
+            const data = scorecardData[vendorName] || {
+                meta: `Scorecard for ${vendorName} - Data being collected...`,
+                table: `
+                    <thead>
+                        <tr>
+                            <th>Evaluation Criteria</th>
+                            <th>Security Team</th>
+                            <th>Legal Team</th>
+                            <th>Business Team</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stakeholder-cell">Security Compliance</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Cost Effectiveness</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                        </tr>
+                        <tr>
+                            <td class="stakeholder-cell">Technical Capability</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                        </tr>
+                        <tr class="overall-row">
+                            <td class="stakeholder-cell">Overall Score</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                            <td class="score-cell score-pending">Pending</td>
+                        </tr>
+                    </tbody>
+                `,
+                notes: `
+                    <div class="note-item">
+                        Evaluation in progress. Stakeholder reviews are being collected and will be available soon.
+                    </div>
+                `
+            };
+
+            document.getElementById('scorecardMeta').textContent = data.meta;
+            document.getElementById('scorecardTable').innerHTML = data.table;
+            document.getElementById('scorecardNotes').innerHTML = data.notes;
+            
+            document.getElementById('scorecardModal').classList.add('active');
+        }
+
+        function closeScorecard() {
+            document.getElementById('scorecardModal').classList.remove('active');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+            if (event.target.classList.contains('scorecard-modal')) {
+                closeScorecard();
+            }
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Vendor Evaluator initialized with', vendors.length, 'vendors');
+            showAll(); // Display all vendors on page load
+        });
+    </script>
+</body>
+</html>
